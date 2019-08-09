@@ -1,42 +1,31 @@
 import * as vscode from 'vscode';
 
-interface CollectionInterface {
-    type: string;
-    label?: string;
-    resourceUri?: vscode.Uri;
-    items?: CollectionFile[];
-}
+import { CollectionModel } from './models/CollectionModel';
+import { CollectionInterface } from './interfaces/CollectionInterface';
 
-export class Collection extends vscode.TreeItem implements CollectionInterface {
-    public type: string;
-    public items: CollectionFile[];
+// export class Collection extends vscode.TreeItem implements CollectionInterface {
+//     public contextValue: string;
+//     public items?: Collection[];
 
-    constructor(label: string) {
-        super(label);
-        this.type = 'collection';
-        this.items = [];
-        this.collapsibleState = 2;
-    }
-}
-
-export class CollectionFile extends vscode.TreeItem implements CollectionInterface {
-    public type: string;
-
-    constructor(path: string) {
-        super(vscode.Uri.file(path));
-        this.type = 'file';
-        this.collapsibleState = vscode.TreeItemCollapsibleState.None;
-    }
-}
+//     constructor(label: string, contextValue: string, collapsibleState: number, items?: Collection[], resourceUri?: vscode.Uri) {
+//         super(label);
+//         this.contextValue = contextValue;
+//         this.collapsibleState = collapsibleState;
+//         this.items = items;
+//         this.resourceUri = resourceUri;
+//     }
+// }
 
 export class CollectionProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | null> = new vscode.EventEmitter<vscode.TreeItem | null>();
     readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | null> = this._onDidChangeTreeData.event;
 
-    public store: Collection[];
+    // public store: Collection[];
+    public model: CollectionModel;
 
     constructor(private context: vscode.ExtensionContext) {
-        this.store = [];
+        // this.store = [];
+        this.model = new CollectionModel();
     }
 
     refresh(element?: CollectionInterface): void {
@@ -47,44 +36,56 @@ export class CollectionProvider implements vscode.TreeDataProvider<vscode.TreeIt
         }
     }
 
-    getChildren(element?: CollectionInterface): vscode.TreeItem[] {
-        if(element) {
-            if(element.items !== undefined) {
-                return element.items;
-            } else {
-                return [];
-            }
-        }
-        return this.store;
+    async getChildren(element?: CollectionInterface): Promise<vscode.TreeItem[]> {
+        return this.model.getChildren(element);
     }
 
     getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
-        return {
-            label: element.label,
-            resourceUri: element.resourceUri,
-            collapsibleState: element.collapsibleState,
-            command: {
-                title: 'Open',
-                command: 'vscode.open',
-                arguments: [
-                    element.resourceUri,
-                    {
-                        preview: false
-                    }
-                ]
-            }
-        };
+        if(element.resourceUri) {
+            return {
+                label: element.label,
+                resourceUri: element.resourceUri,
+                contextValue: element.contextValue,
+                collapsibleState: element.collapsibleState,
+                command: {
+                    title: 'Open',
+                    command: 'vscode.open',
+                    arguments: [
+                        element.resourceUri,
+                        {
+                            preview: false
+                        }
+                    ]
+                }
+            };
+        } else {
+            return {
+                label: element.label,
+                resourceUri: element.resourceUri,
+                contextValue: element.contextValue,
+                collapsibleState: element.collapsibleState
+            };
+        }
     }
 
     // substitute these methods for api connection
-    addCollection(element: Collection) {
-        this.store.push(element);
-        this.refresh();
+    addCollection(element: CollectionInterface) {
+        this.model.write(element)
+            .then(() => {
+                this.refresh();
+            });
     }
     
-    addFile(collection: Collection, element: CollectionFile) {
-        collection.items.push(element);
-        this.refresh(collection);
+    // messy
+    addFile(collection: CollectionInterface, element: string) {
+        if (collection.items === undefined) {
+            collection.items = [];
+        }
+        collection.items.push(element.replace(`${vscode.workspace.rootPath}/`, ''));
+        this.model.write(collection)
+            .then(() => {
+                this.refresh();
+            });
     }
 }
 
@@ -101,7 +102,9 @@ export class CollectionExplorer {
             })
             .then(value => {
                 if(value !== undefined) {
-                    collectionProvider.addCollection(new Collection(value));
+                    collectionProvider.addCollection({
+                        title: value
+                    });
                 }
             });
         });
@@ -109,14 +112,21 @@ export class CollectionExplorer {
         context.subscriptions.push(addCollectionCmd);
 
         const assignFileCmd = vscode.commands.registerCommand('extension.assignFile', (e) => {
-            vscode.window.showQuickPick(collectionProvider.store.map((element) => {
-                return element.label!;
-            }), {
-                placeHolder: 'Choose Collection'
-            }).then(value => {
-                let collection = collectionProvider.store.filter(item => { return item.label === value; })[0];
-                collectionProvider.addFile(collection, new CollectionFile(e.path));
-            });
+            collectionProvider.model.getCollections()
+                .then((collections) => {
+                    vscode.window.showQuickPick(
+                        collections.map((element) => {
+                            return element.title!;
+                        }
+                        ), {
+                            placeHolder: 'Choose Collection'
+                        }).then(value => {
+                            collectionProvider.model.getCollection(value as string)
+                                .then((collection) => {
+                                    collectionProvider.addFile(collection, e.path);
+                                });
+                        });
+                });
         });
 
         context.subscriptions.push(assignFileCmd);
