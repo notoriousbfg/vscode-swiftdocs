@@ -1,7 +1,7 @@
 {
 	"name": "swiftdocs",
 	"displayName": "SwiftDocs",
-	"description": "A set of tools to help you understand your code.",
+	"description": "A set of tools to help you understand your code better.",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.36.0"
@@ -10,60 +10,68 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:collectionExplorer"
+		"onCommand:extension.createSnippet"
 	],
-	"main": "./out/extension.js",
+	"main": "./dist/extension.js",
 	"contributes": {
-		"views": {
-			"explorer": [
-				{
-					"id": "collectionExplorer",
-					"name": "SwiftDocs: Collections"
-				}
-			]
-		},
+		"views": {},
 		"commands": [
 			{
-				"command": "collectionExplorer.addCollection",
-				"title": "New Collection"
+				"command": "extension.activate",
+				"title": "Open SwiftDocs"
 			},
 			{
-				"command": "extension.assignFile",
-				"title": "Assign file to Collection"
+				"command": "extension.createSnippet",
+				"title": "Copy Snippet"
 			}
 		],
 		"menus": {
-			"explorer/context": [
+			"editor/context": [
 				{
-					"command": "extension.assignFile",
-					"group": "navigation@1"
-				}
-			],
-			"view/title": [
-				{
-					"command": "collectionExplorer.addCollection",
-					"when": "view == collectionExplorer",
-					"group": "navigation"
+					"command": "extension.createSnippet",
+					"group": "2_workspace@1"
 				}
 			]
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile",
-		"test": "node ./out/test/runTest.js"
+		"vscode:prepublish": "webpack --mode production",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch",
+		"test-compile": "tsc -p ./"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.1",
 		"@types/mocha": "^5.2.6",
 		"@types/node": "^10.12.21",
+		"@types/react": "^16.9.2",
+		"@types/react-dom": "^16.9.0",
+		"@types/react-redux": "^7.1.2",
+		"@types/react-router-dom": "^4.3.5",
+		"@types/redux": "^3.6.0",
+		"@types/redux-thunk": "^2.1.0",
 		"@types/vscode": "^1.36.0",
 		"glob": "^7.1.4",
 		"mocha": "^6.1.4",
-		"typescript": "^3.3.1",
+		"redux-devtools": "^3.5.0",
+		"redux-devtools-dock-monitor": "^1.1.3",
+		"redux-devtools-log-monitor": "^1.4.0",
+		"redux-logger": "^3.0.6",
+		"source-map-loader": "^0.2.4",
+		"ts-loader": "^6.0.4",
 		"tslint": "^5.12.1",
-		"vscode-test": "^1.0.2"
+		"typescript": "^3.5.3",
+		"vscode-test": "^1.0.2",
+		"webpack": "^4.39.2",
+		"webpack-cli": "^3.3.7"
+	},
+	"dependencies": {
+		"prop-types": "^15.7.2",
+		"react": "^16.9.0",
+		"react-dom": "^16.9.0",
+		"react-redux": "^7.1.0",
+		"react-router-dom": "^5.0.1",
+		"redux": "^4.0.4",
+		"redux-thunk": "^2.3.0"
 	}
 }
