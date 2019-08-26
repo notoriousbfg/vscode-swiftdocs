@@ -6704,6 +6704,7 @@ const vscode = __webpack_require__(/*! vscode */ "vscode");
 const path = __webpack_require__(/*! path */ "path");
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 const server_1 = __webpack_require__(/*! react-dom/server */ "./node_modules/react-dom/server.js");
+const Snippet_1 = __webpack_require__(/*! ./models/Snippet */ "./src/models/Snippet.ts");
 const Wiki_1 = __webpack_require__(/*! ./models/Wiki */ "./src/models/Wiki.ts");
 const WikiSerializer_1 = __webpack_require__(/*! ./serializers/WikiSerializer */ "./src/serializers/WikiSerializer.ts");
 class WikiExplorer {
@@ -6743,15 +6744,15 @@ class WikiExplorer {
                 // so that new panels can be created
                 currentPanel = undefined;
             }, null, context.subscriptions);
-            // let editor = vscode.window.activeTextEditor;
-            // let snippet: Snippet;
-            // if (editor !== undefined) {
-            //     snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
-            //     currentPanel.webview.postMessage({
-            //         type: 'addSnippet',
-            //         snippet: snippet
-            //     });
-            // }
+            let editor = vscode.window.activeTextEditor;
+            let snippet;
+            if (editor !== undefined) {
+                snippet = new Snippet_1.default(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
+                currentPanel.webview.postMessage({
+                    type: 'addSnippet',
+                    snippet: snippet
+                });
+            }
         });
         context.subscriptions.push(createSnippet);
         vscode.window.registerWebviewPanelSerializer('swiftDocs', new WikiSerializer_1.WikiSerializer());
@@ -6782,6 +6783,28 @@ exports.activate = activate;
 // this method is called when your extension is deactivated
 function deactivate() { }
 exports.deactivate = deactivate;
+
+
+/***/ }),
+
+/***/ "./src/models/Snippet.ts":
+/*!*******************************!*\
+  !*** ./src/models/Snippet.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class Snippet {
+    constructor(start, end, text) {
+        this.start = start;
+        this.end = end;
+        this.text = text;
+    }
+}
+exports.default = Snippet;
 
 
 /***/ }),

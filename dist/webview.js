@@ -29327,6 +29327,11 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
     this.props.vscode.setState(this.state);
   }
 
+  componentDidMount() {
+    this.props.message.on('addSnippet', message => {// push snippet into state
+    });
+  }
+
   render() {
     return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", null, react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("input", {
       type: "text",
@@ -29390,21 +29395,23 @@ __webpack_require__.r(__webpack_exports__);
 class MessageBus {
   constructor(vscode) {
     this.vscode = vscode;
-    window.addEventListener('message', this.handleMessage);
+    this.listeners = {};
+    window.addEventListener('message', e => {
+      this.handleMessage(e);
+    });
   } // what event type is this?
 
 
-  handleMessage(evt) {
-    console.log(evt);
+  handleMessage(event) {
+    let message = event.data;
 
-    switch (evt.type) {
-      case 'addSnippet':
-        console.log(evt.snippet);
-        break;
-
-      default:
-        break;
+    if (typeof this.listeners[message.type] !== undefined) {
+      this.listeners[message.type](message);
     }
+  }
+
+  on(type, callback) {
+    this.listeners[type] = callback;
   }
 
   send(message) {

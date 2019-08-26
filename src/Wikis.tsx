@@ -75,17 +75,17 @@ export class WikiExplorer {
                 context.subscriptions
             );
 
-            // let editor = vscode.window.activeTextEditor;
-            // let snippet: Snippet;
+            let editor = vscode.window.activeTextEditor;
+            let snippet: Snippet;
 
-            // if (editor !== undefined) {
-            //     snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
+            if (editor !== undefined) {
+                snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
 
-            //     currentPanel.webview.postMessage({
-            //         type: 'addSnippet',
-            //         snippet: snippet
-            //     });
-            // }
+                currentPanel.webview.postMessage({
+                    type: 'addSnippet',
+                    snippet: snippet
+                });
+            }
         });
 
         context.subscriptions.push(createSnippet);

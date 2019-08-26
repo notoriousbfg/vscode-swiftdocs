@@ -1,22 +1,26 @@
 export default class MessageBus {
     private vscode: any;
+    private listeners: { [key: string]: Function };
 
     public constructor(vscode: any) {
         this.vscode = vscode;
-        window.addEventListener('message', this.handleMessage);
+        this.listeners = {};
+        window.addEventListener('message', (e) => {
+            this.handleMessage(e);
+        });
     }
 
     // what event type is this?
-    private handleMessage(evt: any) {
-        console.log(evt);
+    private handleMessage(event: any) : void {
+        let message = event.data;
 
-        switch(evt.type) {
-            case 'addSnippet':
-                console.log(evt.snippet);
-                break;
-            default:
-                break;
+        if(typeof this.listeners[message.type] !== undefined) {
+            this.listeners[message.type](message);
         }
+    }
+
+    public on(type: string, callback: (message: {}) => any) {
+        this.listeners[type] = callback;
     }
 
     public send(message: {}) {

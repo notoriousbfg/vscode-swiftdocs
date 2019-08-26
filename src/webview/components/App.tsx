@@ -38,6 +38,12 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
         this.props.vscode.setState(this.state);
     }
 
+    componentDidMount() {
+        this.props.message.on('addSnippet', (message) => {
+            // push snippet into state
+        });
+    }
+
     render () {
         return (
             <div>
