@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.createSnippet"
+		"onCommand:extension.createSnippet",
+		"onWebviewPanel:swiftDocs"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -41,6 +42,9 @@
 		"test-compile": "tsc -p ./"
 	},
 	"devDependencies": {
+		"@babel/core": "^7.5.5",
+		"@babel/preset-env": "^7.5.5",
+		"@babel/preset-typescript": "^7.3.3",
 		"@types/glob": "^7.1.1",
 		"@types/mocha": "^5.2.6",
 		"@types/node": "^10.12.21",
@@ -51,6 +55,7 @@
 		"@types/redux": "^3.6.0",
 		"@types/redux-thunk": "^2.1.0",
 		"@types/vscode": "^1.36.0",
+		"babel-loader": "^8.0.6",
 		"glob": "^7.1.4",
 		"mocha": "^6.1.4",
 		"redux-devtools": "^3.5.0",
@@ -66,6 +71,7 @@
 		"webpack-cli": "^3.3.7"
 	},
 	"dependencies": {
+		"@babel/preset-react": "^7.0.0",
 		"prop-types": "^15.7.2",
 		"react": "^16.9.0",
 		"react-dom": "^16.9.0",

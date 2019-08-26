@@ -6690,9 +6690,9 @@ if (false) {} else {
 
 /***/ }),
 
-/***/ "./src/Flows.tsx":
+/***/ "./src/Wikis.tsx":
 /*!***********************!*\
-  !*** ./src/Flows.tsx ***!
+  !*** ./src/Wikis.tsx ***!
   \***********************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6701,52 +6701,63 @@ if (false) {} else {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = __webpack_require__(/*! vscode */ "vscode");
+const path = __webpack_require__(/*! path */ "path");
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 const server_1 = __webpack_require__(/*! react-dom/server */ "./node_modules/react-dom/server.js");
-const WebView_1 = __webpack_require__(/*! ./components/WebView */ "./src/components/WebView.tsx");
-class FlowExplorer {
+const Wiki_1 = __webpack_require__(/*! ./models/Wiki */ "./src/models/Wiki.ts");
+const WikiSerializer_1 = __webpack_require__(/*! ./serializers/WikiSerializer */ "./src/serializers/WikiSerializer.ts");
+class WikiExplorer {
     constructor(context) {
         this.context = context;
         let currentPanel = undefined;
+        let wiki = new Wiki_1.default();
         const createSnippet = vscode.commands.registerCommand("extension.createSnippet", (e) => {
             if (currentPanel) {
-                currentPanel.reveal(vscode.ViewColumn.One);
+                const columnToShowIn = vscode.window.activeTextEditor
+                    ? vscode.window.activeTextEditor.viewColumn
+                    : undefined;
+                currentPanel.reveal(columnToShowIn);
             }
             else {
-                currentPanel = vscode.window.createWebviewPanel('newFlow', 'SwiftDocs: New Flow', vscode.ViewColumn.One, {});
+                currentPanel = vscode.window.createWebviewPanel('newWiki', 'SwiftDocs: New Wiki', vscode.ViewColumn.One, {
+                    enableScripts: true
+                });
             }
-            currentPanel.webview.html = server_1.renderToString(React.createElement(WebView_1.default, null));
+            const onDiskPath = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'webview.js'));
+            const scriptSrc = onDiskPath.with({ scheme: 'vscode-resource' });
+            const page = (React.createElement("html", null,
+                React.createElement("head", null,
+                    React.createElement("script", { src: scriptSrc.toString(), defer: true })),
+                React.createElement("body", null,
+                    React.createElement("div", { id: "root" }))));
+            currentPanel.webview.html = server_1.renderToString(page);
+            currentPanel.webview.onDidReceiveMessage(message => {
+                switch (message.type) {
+                    case 'updateTitle':
+                        wiki.setTitle(message.title);
+                        console.log(wiki.title);
+                        return;
+                }
+            }, undefined, context.subscriptions);
+            currentPanel.onDidDispose(() => {
+                // so that new panels can be created
+                currentPanel = undefined;
+            }, null, context.subscriptions);
             // let editor = vscode.window.activeTextEditor;
+            // let snippet: Snippet;
             // if (editor !== undefined) {
-            //     let snippet = new SnippetModel(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
-            //     // open webview or focus webview
+            //     snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
+            //     currentPanel.webview.postMessage({
+            //         type: 'addSnippet',
+            //         snippet: snippet
+            //     });
             // }
         });
         context.subscriptions.push(createSnippet);
+        vscode.window.registerWebviewPanelSerializer('swiftDocs', new WikiSerializer_1.WikiSerializer());
     }
 }
-exports.FlowExplorer = FlowExplorer;
-
-
-/***/ }),
-
-/***/ "./src/components/WebView.tsx":
-/*!************************************!*\
-  !*** ./src/components/WebView.tsx ***!
-  \************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-class WebView extends React.Component {
-    render() {
-        return (React.createElement("h1", null, "Hello World"));
-    }
-}
-exports.default = WebView;
+exports.WikiExplorer = WikiExplorer;
 
 
 /***/ }),
@@ -6761,19 +6772,94 @@ exports.default = WebView;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-// import { CollectionExplorer } from './Collections';
-const Flows_1 = __webpack_require__(/*! ./Flows */ "./src/Flows.tsx");
+const Wikis_1 = __webpack_require__(/*! ./Wikis */ "./src/Wikis.tsx");
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
-    // const collectionExplorer = new CollectionExplorer(context);
-    const flowExplorer = new Flows_1.FlowExplorer(context);
+    const wikiExplorer = new Wikis_1.WikiExplorer(context);
 }
 exports.activate = activate;
 // this method is called when your extension is deactivated
 function deactivate() { }
 exports.deactivate = deactivate;
 
+
+/***/ }),
+
+/***/ "./src/models/Wiki.ts":
+/*!****************************!*\
+  !*** ./src/models/Wiki.ts ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class Wiki {
+    constructor() {
+        this.title = '';
+        this.snippets = [];
+    }
+    setTitle(title) {
+        this.title = title;
+    }
+    addSnippet(snippet) {
+        this.snippets.push(snippet);
+    }
+    removeSnippet(index) {
+        this.snippets.splice(index, 1);
+    }
+}
+exports.default = Wiki;
+
+
+/***/ }),
+
+/***/ "./src/serializers/WikiSerializer.ts":
+/*!*******************************************!*\
+  !*** ./src/serializers/WikiSerializer.ts ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+class WikiSerializer {
+    deserializeWebviewPanel(webviewPanel, state) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // `state` is the state persisted using `setState` inside the webview
+            console.log(`Got state: ${state}`);
+            // Restore the content of our webview.
+            //
+            // Make sure we hold on to the `webviewPanel` passed in here and
+            // also restore any event listeners we need on it.
+            // webviewPanel.webview.html = getWebviewContent();
+        });
+    }
+}
+exports.WikiSerializer = WikiSerializer;
+
+
+/***/ }),
+
+/***/ "path":
+/*!***********************!*\
+  !*** external "path" ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("path");
 
 /***/ }),
 

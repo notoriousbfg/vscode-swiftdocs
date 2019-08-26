@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { SnippetInterface } from '../interfaces/SnippetInterface';
+import { ModelInterface } from '../interfaces/ModelInterface';
 
-export class SnippetModel implements SnippetInterface {
+export default class Snippet implements ModelInterface {
     public start: vscode.Position;
     public end: vscode.Position;
     public text: string;

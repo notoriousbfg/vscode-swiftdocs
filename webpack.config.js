@@ -4,8 +4,7 @@
 
 const path = require('path');
 
-/** @type { import('webpack').Configuration } */
-const config = {
+const serverConfig = {
     target: 'node',
     entry: './src/extension.ts',
     output: {
@@ -35,4 +34,34 @@ const config = {
         ]
     }
 };
-module.exports = config;
+
+const clientConfig = {
+    target: 'web',
+    entry: './src/webview/index.tsx',
+    output: {
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'webview.js'
+    },
+    devtool: 'source-map',
+    resolve: {
+        extensions: ['.ts', '.tsx', '.js']
+    },
+    module: {
+        rules: [
+            {
+                test: /\.ts(x?)$/,
+                exclude: /node_modules/,
+                use: [
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: ['@babel/preset-typescript', '@babel/preset-react']
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+module.exports = [serverConfig, clientConfig];
