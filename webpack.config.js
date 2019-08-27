@@ -13,7 +13,6 @@ const serverConfig = {
         libraryTarget: 'commonjs2',
         devtoolModuleFilenameTemplate: '../[resource-path]'
     },
-    devtool: 'source-map',
     externals: {
         vscode: 'commonjs vscode'
     },
@@ -42,7 +41,6 @@ const clientConfig = {
         path: path.resolve(__dirname, 'dist'),
         filename: 'webview.js'
     },
-    devtool: 'source-map',
     resolve: {
         extensions: ['.ts', '.tsx', '.js']
     },
@@ -59,6 +57,11 @@ const clientConfig = {
                         }
                     }
                 ]
+            },
+            {
+                test: /\.css$/i,
+                exclude: /node_modules/,
+                use: ['style-loader', 'css-loader'],
             }
         ]
     }

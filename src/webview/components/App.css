@@ -1,0 +1,31 @@
+body {
+    padding: 20px;
+    margin: 0;
+}
+
+body * {
+    box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    margin: 0;
+}
+
+.title-input {
+    width: 100%;
+    background: rgba(0,0,0,0);
+    border: none;
+    color: #FFFFFF;
+    outline: none;
+    border-bottom: 1px solid #eff0f1;
+    padding: 15px 0;
+    font-size: 24px;
+}
+
+.snippet-list {
+    list-style: none;
+    padding-left: 0;
+}

@@ -34,58 +34,57 @@ export class WikiExplorer {
                 );
             }
 
-            const onDiskPath = vscode.Uri.file(
-                path.join(context.extensionPath, 'dist', 'webview.js')
-            );
-
-            const scriptSrc = onDiskPath.with({ scheme: 'vscode-resource' });
+            const scriptSrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'webview.js')).with({ scheme: 'vscode-resource' });
 
             const page = (
                 <html>
-                    <head>
-                        <script src={scriptSrc.toString()} defer></script>
-                    </head>
                     <body>
                         <div id="root"></div>
+                        <script src={scriptSrc.toString()}></script>
                     </body>
                 </html>
             );
 
             currentPanel.webview.html = renderToString(page);
 
+            let editor = vscode.window.activeTextEditor;
+            let snippet: Snippet;
+
+            if (editor !== undefined) {
+                // create snippet from current selection
+                snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
+
+                // attach snippet to wiki
+                wiki.addSnippet(snippet);
+
+                // send snippet to webview so it can be rendered
+                currentPanel.webview.postMessage({
+                    type: 'addSnippet',
+                    snippet: snippet
+                });
+            }
+
+            // when we receive panel from webview
             currentPanel.webview.onDidReceiveMessage(
                 message => {
                     switch (message.type) {
                         case 'updateTitle':
                             wiki.setTitle(message.title);
-                            console.log(wiki.title);
-                            return;
+                            break;
                     }
                 },
                 undefined,
                 context.subscriptions
             );
 
+            // when panel is closed
             currentPanel.onDidDispose(
                 () => {
-                    // so that new panels can be created
                     currentPanel = undefined;
                 },
                 null,
                 context.subscriptions
             );
-
-            let editor = vscode.window.activeTextEditor;
-            let snippet: Snippet;
-
-            if (editor !== undefined) {
-                snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
-
-                currentPanel.webview.postMessage({
-                    type: 'addSnippet',
-                    snippet: snippet
-                });
-            }
         });
 
         context.subscriptions.push(createSnippet);

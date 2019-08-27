@@ -2,7 +2,7 @@ export default class MessageBus {
     private vscode: any;
     private listeners: { [key: string]: Function };
 
-    public constructor(vscode: any) {
+    public constructor(vscode: Object) {
         this.vscode = vscode;
         this.listeners = {};
         window.addEventListener('message', (e) => {
@@ -19,7 +19,7 @@ export default class MessageBus {
         }
     }
 
-    public on(type: string, callback: (message: {}) => any) {
+    public on(type: string, callback: (message: { [key: string]: any }) => any) {
         this.listeners[type] = callback;
     }
 
