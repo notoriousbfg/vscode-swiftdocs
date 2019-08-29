@@ -8,9 +8,19 @@ export default class Wiki implements ModelInterface {
     public title: string;
     public snippets: Snippet[];
 
-    public constructor() {
+    public constructor(options?: {}) {
         this.title = '';
         this.snippets = [];
+
+        if (options) {
+            // for(let [key, value] of Object.entries(options)) {
+            //     console.log([key, value]);
+
+            //     // if (typeof this[key] !== undefined) {
+
+            //     // }
+            // }
+        }
     }
 
     public setTitle(title: string) {
@@ -23,5 +33,9 @@ export default class Wiki implements ModelInterface {
 
     public removeSnippet(index: number) {
         this.snippets.splice(index, 1);
+    }
+
+    public setSnippets(snippets: []) {
+        this.snippets = snippets;
     }
 }

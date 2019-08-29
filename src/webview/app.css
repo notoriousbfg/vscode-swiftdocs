@@ -1,0 +1,131 @@
+body {
+    padding: 20px 30px;
+    margin: 0;
+}
+
+body * {
+    box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    margin: 0;
+}
+
+.title-input {
+    width: 100%;
+    background: rgba(0,0,0,0);
+    border: none;
+    color: #FFFFFF;
+    outline: none;
+    padding: 15px 0;
+    font-size: 20px;
+    line-height: 24px;
+    margin-bottom: 15px;
+}
+
+.snippet-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.snippet {
+    width: 100%;
+    background: #2A2B2F;
+    border-radius: 3px;
+    padding: 20px 25px 20px 60px;
+    box-shadow: 0 3px 4px 0px rgba(0,0,0,0.30);
+    margin-bottom: 20px;
+}
+
+.snippet-description {
+    font-size: 12px;
+    color: #E3DCDC;
+    letter-spacing: 0;
+    line-height: 16px;
+    margin: 0 0 20px 0;
+}
+
+.snippet-code {
+    background: #1F2127;
+    border-radius: 2px;
+    padding: 10px;
+    overflow: scroll;
+    font-size: 11px;
+    line-height: 12px;
+    color: rgba(227, 220, 220, 0.66);
+}
+
+.snippet-code::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgab(0,0,0,0.6);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background: white;
+    width: 100%;
+    max-width: 450px;
+    padding: 20px;
+    border-radius: 3px;
+}
+
+.modal-title {
+    color: black;
+    margin-bottom: 20px;
+}
+
+.snippet-text {
+    margin-bottom: 10px;
+}
+
+.modal-footer {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.textarea {
+    width: 100%;
+    border: 1px solid grey;
+    padding: 10px;
+    min-height: 100px;
+    border-radius: 3px;
+    outline: none;
+}
+
+.button {
+    padding: 5px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.cancel-button {
+    background: grey;
+}
+
+.submit-button {
+    background: green;
+}

@@ -1,51 +1,39 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as React from 'react';
+import { EventEmitter } from 'events';
 
 import { renderToString } from 'react-dom/server';
 
 import Snippet from './models/Snippet';
 import Wiki from './models/Wiki';
 
-import App from './webview/components/App';
-
 import { WikiSerializer } from './serializers/WikiSerializer';
 
 export class WikiExplorer {
     constructor(private context: vscode.ExtensionContext) {
         let currentPanel: vscode.WebviewPanel | undefined = undefined;
-        let wiki = new Wiki();
+        let events: EventEmitter = new EventEmitter();
+        let wiki: Wiki | undefined = new Wiki();
+        let ready: Boolean = false;
 
         const createSnippet = vscode.commands.registerCommand("extension.createSnippet", (e) => {
-            if (currentPanel) {
-                const columnToShowIn = vscode.window.activeTextEditor
-                    ? vscode.window.activeTextEditor.viewColumn
-                    : undefined;
+            const columnToShowIn = vscode.ViewColumn.Beside;
+            let firstRender = true;
 
+            if (currentPanel) {
                 currentPanel.reveal(columnToShowIn);
+                firstRender = false;
             } else {
                 currentPanel = vscode.window.createWebviewPanel(
                     'newWiki',
                     'SwiftDocs: New Wiki',
-                    vscode.ViewColumn.One,
+                    columnToShowIn,
                     {
                         enableScripts: true
                     }
                 );
             }
-
-            const scriptSrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'webview.js')).with({ scheme: 'vscode-resource' });
-
-            const page = (
-                <html>
-                    <body>
-                        <div id="root"></div>
-                        <script src={scriptSrc.toString()}></script>
-                    </body>
-                </html>
-            );
-
-            currentPanel.webview.html = renderToString(page);
 
             let editor = vscode.window.activeTextEditor;
             let snippet: Snippet;
@@ -54,22 +42,62 @@ export class WikiExplorer {
                 // create snippet from current selection
                 snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
 
-                // attach snippet to wiki
-                wiki.addSnippet(snippet);
-
                 // send snippet to webview so it can be rendered
-                currentPanel.webview.postMessage({
-                    type: 'addSnippet',
-                    snippet: snippet
-                });
+                if(!ready) {
+                    events.once('ready', () => {
+                        if (currentPanel !== undefined) {
+                            currentPanel.webview.postMessage({
+                                type: 'addSnippet',
+                                snippet: snippet
+                            });
+                        }
+                    });
+                } else {
+                    currentPanel.webview.postMessage({
+                        type: 'addSnippet',
+                        snippet: snippet
+                    });
+                }
+            }
+
+            if(firstRender) {
+                const scriptSrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'webview.js')).with({ scheme: 'vscode-resource' });
+                const cssSrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'webview.css')).with({ scheme: 'vscode-resource' });
+
+                const page = (
+                    <html>
+                        <head>
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                            <link rel="stylesheet" href={cssSrc.toString()} />
+                        </head>
+                        <body>
+                            <div id="root"></div>
+                            <script src={scriptSrc.toString()}></script>
+                        </body>
+                    </html>
+                );
+
+                currentPanel.webview.html = renderToString(page);
             }
 
             // when we receive panel from webview
             currentPanel.webview.onDidReceiveMessage(
                 message => {
+                    events.emit(message.type, message);
+
                     switch (message.type) {
+                        case 'ready':
+                            ready = true;
+                            break;
                         case 'updateTitle':
-                            wiki.setTitle(message.title);
+                            if(wiki !== undefined) {
+                                wiki.setTitle(message.title);
+                            }
+                            break;
+                        case 'addSnippet':
+                            if (wiki !== undefined) {
+                                wiki.addSnippet(message.snippet);
+                            }
                             break;
                     }
                 },
@@ -81,6 +109,7 @@ export class WikiExplorer {
             currentPanel.onDidDispose(
                 () => {
                     currentPanel = undefined;
+                    wiki = undefined;
                 },
                 null,
                 context.subscriptions

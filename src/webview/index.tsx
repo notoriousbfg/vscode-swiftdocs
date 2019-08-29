@@ -3,7 +3,10 @@ import * as ReactDOM from 'react-dom';
 import App from './components/App';
 import MessageBus from './messages';
 
+import './app.css';
+
 declare var acquireVsCodeApi: any;
+
 const vscode = acquireVsCodeApi();
 
 let messageBus = new MessageBus(vscode);

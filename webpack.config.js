@@ -2,7 +2,9 @@
 
 'use strict';
 
-const path = require('path');
+const path = require('path'),
+      MiniCssExtractPlugin = require('mini-css-extract-plugin'),
+      webpack = require('webpack');
 
 const serverConfig = {
     target: 'node',
@@ -29,9 +31,18 @@ const serverConfig = {
                         loader: 'ts-loader'
                     }
                 ]
+            },
+            {
+                test: /\.css$/i,
+                use: 'ignore-loader'
             }
         ]
-    }
+    },
+    plugins: [
+        new webpack.DefinePlugin({
+            '__SERVER__': true
+        })
+    ]
 };
 
 const clientConfig = {
@@ -61,10 +72,27 @@ const clientConfig = {
             {
                 test: /\.css$/i,
                 exclude: /node_modules/,
-                use: ['style-loader', 'css-loader'],
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,
+                        options: {
+                            publicPath: path.resolve(__dirname, 'dist')
+                        }
+                    },
+                    'css-loader'
+                ],
             }
         ]
-    }
+    },
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: 'webview.css',
+            ignoreOrder: true
+        }),
+        new webpack.DefinePlugin({
+            '__SERVER__': false
+        })
+    ]
 };
 
 module.exports = [serverConfig, clientConfig];

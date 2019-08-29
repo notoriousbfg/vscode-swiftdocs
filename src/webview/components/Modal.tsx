@@ -2,8 +2,6 @@ import * as React from 'react';
 
 import Snippet from '../../models/Snippet';
 
-import './Modal.css';
-
 interface ModalProps {
     snippet: Snippet | undefined;
     handleSubmit: Function;
