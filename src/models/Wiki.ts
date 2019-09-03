@@ -35,7 +35,7 @@ export default class Wiki implements ModelInterface {
         this.snippets.splice(index, 1);
     }
 
-    public setSnippets(snippets: []) {
+    public setSnippets(snippets: Snippet[]) {
         this.snippets = snippets;
     }
 }

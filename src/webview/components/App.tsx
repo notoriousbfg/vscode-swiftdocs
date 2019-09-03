@@ -1,10 +1,13 @@
 import * as React from 'react';
+import { SortableContainer, SortableElement } from 'react-sortable-hoc';
+import arrayMove from 'array-move';
 
 import Wiki from '../../models/Wiki';
 import Snippet from '../../models/Snippet';
 import MessageBus from '../messages';
 
 import Modal from './Modal';
+import SnippetComponent from './Snippet';
 
 import VSCodeState from '../state';
 
@@ -16,8 +19,23 @@ interface WebViewProps {
 interface WebViewState {
     wiki: Wiki;
     showModal: boolean;
+    isSorting: boolean;
     selectedSnippet?: Snippet;
 }
+
+const SortableItem = SortableElement(({ value, canSelect }: { value: Snippet, canSelect: boolean }) => { return <SnippetComponent snippet={value} canSelect={canSelect} />; });
+
+const SortableList = SortableContainer(({ items, canSelect }: { items: Snippet[], canSelect: boolean }) => {
+    return (
+        <div className="snippet-list">
+            {
+                items.map((value: Snippet, index: number) => (
+                    <SortableItem key={`item-${value.description}`} index={index} value={value} canSelect={canSelect} />
+                ))
+            }
+        </div>
+    );
+});
 
 export default class App extends React.Component<WebViewProps, WebViewState> {
     private codeState: VSCodeState;
@@ -29,8 +47,12 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
 
         this.state = {
             wiki: new Wiki(),
-            showModal: false
+            showModal: false,
+            isSorting: false
         };
+
+        this.onSortEnd = this.onSortEnd.bind(this);
+        this.onSortStart = this.onSortStart.bind(this);
     }
 
     changeTitle(event: React.ChangeEvent<HTMLInputElement>) {
@@ -73,13 +95,28 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
         });
     }
 
+    onSortStart() {
+        this.setState({ isSorting: true });
+    }
+
+    onSortEnd({ oldIndex, newIndex }: { oldIndex: number, newIndex: number }) {
+        let snippets = this.state.wiki.snippets;
+        let newSnippets = arrayMove(snippets, oldIndex, newIndex);
+
+        this.state.wiki.setSnippets(newSnippets);
+
+        this.setState({ isSorting: false });
+
+        this.forceUpdate();
+    }
+
     componentDidMount() {
-        // create new Wiki instance from codeState
+        // create new Wiki instance from VSCode's internal state
         if (this.codeState.get('wiki')) {
             let state = this.codeState.get('wiki');
             let wiki = new Wiki();
 
-            // constructor would replace all of this
+            // TODO: instantiate wiki with options object
             wiki.setTitle(state.title);
             wiki.setSnippets(state.snippets);
 
@@ -92,8 +129,6 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
             });
 
             this.props.message.on('addSnippet', (message) => {
-                console.log('maverick');
-
                 let snippet = new Snippet(message.snippet.start, message.snippet.end, message.snippet.text);
 
                 // show modal
@@ -108,6 +143,8 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
     componentDidUpdate(oldProps: WebViewProps, oldState: WebViewState) {
         // update vscode state with react state
         this.props.vscode.setState(this.state);
+
+        console.log('component updated!');
     }
 
     render () {
@@ -115,33 +152,7 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
             <div className="app-container">
                 <input type="text" name="title" className="title-input" onChange={(e) => { this.changeTitle(e); }} defaultValue={this.state.wiki.title} placeholder="Wiki Title" />
                 {this.state.wiki.snippets.length > 0 &&
-                    <ul className="snippet-list">
-                        {
-                            this.state.wiki.snippets.map((snippet: Snippet, key: number) => {
-                                return (
-                                    <li className="snippet" key={key}>
-                                        <svg width="14px" height="12px" viewBox="0 0 14 12" version="1.1" className="snippet-handle">
-                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                <g transform="translate(-1183.000000, -453.000000)" fill="#464954">
-                                                    <g transform="translate(1166.000000, 363.000000)">
-                                                        <g transform="translate(17.000000, 90.000000)">
-                                                            <rect x="0" y="0" width="14" height="2" rx="1"></rect>
-                                                            <rect x="0" y="5" width="14" height="2" rx="1"></rect>
-                                                            <rect x="0" y="10" width="14" height="2" rx="1"></rect>
-                                                        </g>
-                                                    </g>
-                                                </g>
-                                            </g>
-                                        </svg>
-                                        {snippet.description && 
-                                            <p className="snippet-description" dangerouslySetInnerHTML={{ __html: snippet.description.replace(/(?:\r\n|\r|\n)/g, '<br>') }}></p>
-                                        }
-                                        <pre className="snippet-code">{snippet.text}</pre>
-                                    </li>
-                                );
-                            })
-                        }
-                    </ul>                
+                    <SortableList items={this.state.wiki.snippets} onSortEnd={this.onSortEnd} onSortStart={this.onSortStart} canSelect={!this.state.isSorting} useDragHandle />
                 }
                 {this.state.showModal &&
                     <Modal snippet={this.state.selectedSnippet} handleSubmit={(snippet: Snippet) => { this.handleSubmit(snippet); }} close={() => { this.close(); }} />
