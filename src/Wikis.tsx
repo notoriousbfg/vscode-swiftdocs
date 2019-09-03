@@ -11,21 +11,21 @@ import Wiki from './models/Wiki';
 import { WikiSerializer } from './serializers/WikiSerializer';
 
 export class WikiExplorer {
-    constructor(private context: vscode.ExtensionContext) {
-        let currentPanel: vscode.WebviewPanel | undefined = undefined;
-        let events: EventEmitter = new EventEmitter();
-        let wiki: Wiki | undefined = new Wiki();
-        let ready: Boolean = false;
+    private currentPanel: vscode.WebviewPanel | undefined = undefined;
+    private wiki: Wiki | undefined = new Wiki();
+    private events: EventEmitter = new EventEmitter();
+    private webviewReady: Boolean = false;
 
+    constructor(private context: vscode.ExtensionContext) {
         const createSnippet = vscode.commands.registerCommand("extension.createSnippet", (e) => {
             const columnToShowIn = vscode.ViewColumn.Beside;
             let firstRender = true;
 
-            if (currentPanel) {
-                currentPanel.reveal(columnToShowIn);
+            if (this.currentPanel) {
+                this.currentPanel.reveal(columnToShowIn);
                 firstRender = false;
             } else {
-                currentPanel = vscode.window.createWebviewPanel(
+                this.currentPanel = vscode.window.createWebviewPanel(
                     'newWiki',
                     'SwiftDocs: New Wiki',
                     columnToShowIn,
@@ -43,17 +43,18 @@ export class WikiExplorer {
                 snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
 
                 // send snippet to webview so it can be rendered
-                if(!ready) {
-                    events.once('ready', () => {
-                        if (currentPanel !== undefined) {
-                            currentPanel.webview.postMessage({
+                if(!this.webviewReady) {
+                    this.events.once('ready', () => {
+                        if (this.currentPanel !== undefined) {
+                            this.currentPanel.webview.postMessage({
                                 type: 'addSnippet',
                                 snippet: snippet
                             });
                         }
+                        this.webviewReady = true;
                     });
                 } else {
-                    currentPanel.webview.postMessage({
+                    this.currentPanel.webview.postMessage({
                         type: 'addSnippet',
                         snippet: snippet
                     });
@@ -77,26 +78,26 @@ export class WikiExplorer {
                     </html>
                 );
 
-                currentPanel.webview.html = renderToString(page);
+                this.currentPanel.webview.html = renderToString(page);
             }
 
             // when we receive panel from webview
-            currentPanel.webview.onDidReceiveMessage(
+            this.currentPanel.webview.onDidReceiveMessage(
                 message => {
-                    events.emit(message.type, message);
+                    this.events.emit(message.type, message);
 
                     switch (message.type) {
-                        case 'ready':
-                            ready = true;
+                        case 'webviewReady':
+                            this.webviewReady = true;
                             break;
                         case 'updateTitle':
-                            if(wiki !== undefined) {
-                                wiki.setTitle(message.title);
+                            if(this.wiki !== undefined) {
+                                this.wiki.setTitle(message.title);
                             }
                             break;
                         case 'addSnippet':
-                            if (wiki !== undefined) {
-                                wiki.addSnippet(message.snippet);
+                            if (this.wiki !== undefined) {
+                                this.wiki.addSnippet(message.snippet);
                             }
                             break;
                     }
@@ -106,10 +107,10 @@ export class WikiExplorer {
             );
 
             // when panel is closed
-            currentPanel.onDidDispose(
+            this.currentPanel.onDidDispose(
                 () => {
-                    currentPanel = undefined;
-                    wiki = undefined;
+                    this.currentPanel = undefined;
+                    this.wiki = undefined;
                 },
                 null,
                 context.subscriptions

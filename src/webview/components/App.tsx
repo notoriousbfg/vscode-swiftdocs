@@ -66,6 +66,13 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
         this.setState({ showModal: false });
     }
 
+    close() {
+        this.setState({ 
+            showModal: false,
+            selectedSnippet: undefined
+        });
+    }
+
     componentDidMount() {
         // create new Wiki instance from codeState
         if (this.codeState.get('wiki')) {
@@ -85,6 +92,8 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
             });
 
             this.props.message.on('addSnippet', (message) => {
+                console.log('maverick');
+
                 let snippet = new Snippet(message.snippet.start, message.snippet.end, message.snippet.text);
 
                 // show modal
@@ -111,6 +120,19 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
                             this.state.wiki.snippets.map((snippet: Snippet, key: number) => {
                                 return (
                                     <li className="snippet" key={key}>
+                                        <svg width="14px" height="12px" viewBox="0 0 14 12" version="1.1" className="snippet-handle">
+                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <g transform="translate(-1183.000000, -453.000000)" fill="#464954">
+                                                    <g transform="translate(1166.000000, 363.000000)">
+                                                        <g transform="translate(17.000000, 90.000000)">
+                                                            <rect x="0" y="0" width="14" height="2" rx="1"></rect>
+                                                            <rect x="0" y="5" width="14" height="2" rx="1"></rect>
+                                                            <rect x="0" y="10" width="14" height="2" rx="1"></rect>
+                                                        </g>
+                                                    </g>
+                                                </g>
+                                            </g>
+                                        </svg>
                                         {snippet.description && 
                                             <p className="snippet-description" dangerouslySetInnerHTML={{ __html: snippet.description.replace(/(?:\r\n|\r|\n)/g, '<br>') }}></p>
                                         }
@@ -122,7 +144,7 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
                     </ul>                
                 }
                 {this.state.showModal &&
-                    <Modal snippet={this.state.selectedSnippet} handleSubmit={(snippet: Snippet) => { this.handleSubmit(snippet); }} />
+                    <Modal snippet={this.state.selectedSnippet} handleSubmit={(snippet: Snippet) => { this.handleSubmit(snippet); }} close={() => { this.close(); }} />
                 }
             </div>
         );
