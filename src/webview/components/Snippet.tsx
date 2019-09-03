@@ -1,11 +1,14 @@
 import * as React from 'react';
 import { SortableHandle } from 'react-sortable-hoc';
 
-import {default as SnippetModel} from '../../models/Snippet';
+import {default as SnippetModel} from '../models/Snippet';
+
+import MessageBus from '../messages';
 
 interface SnippetProps {
     snippet: SnippetModel;
     canSelect: boolean;
+    message: MessageBus;
 }
 
 interface SnippetState {}
@@ -29,6 +32,13 @@ const DragHandle = SortableHandle(() => {
 });
 
 export default class Snippet extends React.Component<SnippetProps, SnippetState> {
+    goToSnippet() {
+        this.props.message.send({
+            type: 'goToFile',
+            snippet: this.props.snippet
+        });
+    }
+
     render() {
         return (
             <div className={`snippet ${!this.props.canSelect ? 'no-select' : ''}`}>
@@ -36,7 +46,7 @@ export default class Snippet extends React.Component<SnippetProps, SnippetState>
                 {this.props.snippet.description !== undefined &&
                     <p className="snippet-description" dangerouslySetInnerHTML={{ __html: this.props.snippet.description!.replace(/(?:\r\n|\r|\n)/g, '<br>') }}></p>
                 }
-                <pre className="snippet-code">{this.props.snippet.text}</pre>
+                <pre className="snippet-code" onClick={(e) => { this.goToSnippet(); }}>{this.props.snippet.text}</pre>
             </div>
         );
     }

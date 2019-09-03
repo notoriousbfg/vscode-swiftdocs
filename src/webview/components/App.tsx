@@ -2,8 +2,8 @@ import * as React from 'react';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
 
-import Wiki from '../../models/Wiki';
-import Snippet from '../../models/Snippet';
+import Wiki from '../models/Wiki';
+import Snippet from '../models/Snippet';
 import MessageBus from '../messages';
 
 import Modal from './Modal';
@@ -23,14 +23,22 @@ interface WebViewState {
     selectedSnippet?: Snippet;
 }
 
-const SortableItem = SortableElement(({ value, canSelect }: { value: Snippet, canSelect: boolean }) => { return <SnippetComponent snippet={value} canSelect={canSelect} />; });
+const SortableItem = SortableElement(({ value, canSelect, message }: { value: Snippet, canSelect: boolean, message: MessageBus }) => { return <SnippetComponent snippet={value} canSelect={canSelect} message={message} />; });
 
-const SortableList = SortableContainer(({ items, canSelect }: { items: Snippet[], canSelect: boolean }) => {
+const SortableList = SortableContainer(({ 
+    items, 
+    canSelect, 
+    message 
+}: { 
+    items: Snippet[], 
+    canSelect: boolean, 
+    message: MessageBus 
+}) => {
     return (
         <div className="snippet-list">
             {
                 items.map((value: Snippet, index: number) => (
-                    <SortableItem key={`item-${value.description}`} index={index} value={value} canSelect={canSelect} />
+                    <SortableItem key={`item-${value.description}`} index={index} value={value} canSelect={canSelect} message={message} />
                 ))
             }
         </div>
@@ -129,7 +137,9 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
             });
 
             this.props.message.on('addSnippet', (message) => {
-                let snippet = new Snippet(message.snippet.start, message.snippet.end, message.snippet.text);
+                let snippet = new Snippet(message.snippet.start, message.snippet.end, message.snippet.text, message.snippet.file.path);
+
+                console.log(snippet.file.path);
 
                 // show modal
                 this.setState({
@@ -143,8 +153,6 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
     componentDidUpdate(oldProps: WebViewProps, oldState: WebViewState) {
         // update vscode state with react state
         this.props.vscode.setState(this.state);
-
-        console.log('component updated!');
     }
 
     render () {
@@ -152,7 +160,7 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
             <div className="app-container">
                 <input type="text" name="title" className="title-input" onChange={(e) => { this.changeTitle(e); }} defaultValue={this.state.wiki.title} placeholder="Wiki Title" />
                 {this.state.wiki.snippets.length > 0 &&
-                    <SortableList items={this.state.wiki.snippets} onSortEnd={this.onSortEnd} onSortStart={this.onSortStart} canSelect={!this.state.isSorting} useDragHandle />
+                    <SortableList items={this.state.wiki.snippets} onSortEnd={this.onSortEnd} onSortStart={this.onSortStart} canSelect={!this.state.isSorting} message={this.props.message!} useDragHandle />
                 }
                 {this.state.showModal &&
                     <Modal snippet={this.state.selectedSnippet} handleSubmit={(snippet: Snippet) => { this.handleSubmit(snippet); }} close={() => { this.close(); }} />

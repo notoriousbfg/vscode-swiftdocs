@@ -40,7 +40,7 @@ export class WikiExplorer {
 
             if (editor !== undefined) {
                 // create snippet from current selection
-                snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection));
+                snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection), editor.document.uri);
 
                 // send snippet to webview so it can be rendered
                 if(!this.webviewReady) {
@@ -99,6 +99,17 @@ export class WikiExplorer {
                             if (this.wiki !== undefined) {
                                 this.wiki.addSnippet(message.snippet);
                             }
+                            break;
+                        case 'goToFile':
+                            vscode.workspace.openTextDocument(vscode.Uri.file(message.snippet.file.path))
+                                .then((doc) => {
+                                    vscode.window.showTextDocument(doc, {
+                                        selection: new vscode.Range(
+                                            new vscode.Position(message.snippet.start.line, message.snippet.start.character),
+                                            new vscode.Position(message.snippet.end.line, message.snippet.end.character)
+                                        )
+                                    });
+                                });
                             break;
                     }
                 },

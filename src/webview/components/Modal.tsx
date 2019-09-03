@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Snippet from '../../models/Snippet';
+import Snippet from '../models/Snippet';
 
 interface ModalProps {
     snippet: Snippet | undefined;
