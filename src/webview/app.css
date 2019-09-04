@@ -36,7 +36,7 @@ h4 {
     width: 100%;
     background: #2A2B2F;
     border-radius: 3px;
-    padding: 20px 25px 20px 60px;
+    padding: 20px 25px 25px 60px;
     box-shadow: 0 3px 4px 0px rgba(0,0,0,0.30);
     margin-bottom: 20px;
     position: relative;
@@ -62,12 +62,7 @@ h4 {
     font-size: 11px;
     line-height: 12px;
     color: rgba(227, 220, 220, 0.66);
-    transition: background 0.2s ease-in-out;
-    cursor: pointer;
-}
-
-.snippet-code:hover {
-    background: #26272C;
+    margin: 0;
 }
 
 .snippet-handle {
@@ -81,6 +76,21 @@ h4 {
 .snippet-code::-webkit-scrollbar {
     width: 0px;
     background: transparent;
+}
+
+.snippet-path {
+    margin: 0;
+    line-height: 1rem;
+    text-align: right;
+    margin: 7px 0 0 0;
+    color: rgb(96, 99, 107);
+    font-size: 11px;
+    transition: color 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.snippet-path:hover {
+    color: rgb(134, 137, 146);
 }
 
 .overlay {

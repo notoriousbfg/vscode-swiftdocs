@@ -1,14 +1,18 @@
 import * as vscode from 'vscode';
 
+import Model from './Model';
 import { ModelInterface } from '../interfaces/ModelInterface';
 
 import Snippet from './Snippet';
 
-export default class Wiki implements ModelInterface {
+export default class Wiki extends Model implements ModelInterface {
+    public id: string = '';
     public title: string;
     public snippets: Snippet[];
 
     public constructor(options?: {}) {
+        super();
+
         this.title = '';
         this.snippets = [];
 

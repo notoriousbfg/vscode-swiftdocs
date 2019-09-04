@@ -5,6 +5,12 @@ import MessageBus from './messages';
 
 import './app.css';
 
+declare global {
+    interface Window {
+        workspacePath: any;
+    }
+}
+
 declare var acquireVsCodeApi: any;
 
 const vscode = acquireVsCodeApi();
