@@ -57,7 +57,7 @@ export default class Snippet extends React.Component<SnippetProps, SnippetState>
                 {this.props.snippet.description !== undefined &&
                     <p className="snippet-description" dangerouslySetInnerHTML={{ __html: this.props.snippet.description!.replace(/(?:\r\n|\r|\n)/g, '<br>') }}></p>
                 }
-                <pre className="snippet-code prettyprint">{this.props.snippet.text}</pre>
+                <pre className="snippet-code">{this.props.snippet.text}</pre>
                 <p className="snippet-path" onClick={(e) => { this.goToSnippet(); }}>{this.filePath()}</p>
             </div>
         );

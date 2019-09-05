@@ -53,9 +53,7 @@ export class WikiExplorer {
 
             // send snippet to webview so it can be rendered
             if (!this.webviewReady) {
-                console.log('foo');
                 this.events.once('ready', () => {
-                    console.log('cunts');
                     if (this.currentPanel !== undefined) {
                         this.currentPanel.webview.postMessage({
                             type: 'addSnippet',
@@ -65,7 +63,6 @@ export class WikiExplorer {
                     this.webviewReady = true;
                 });
             } else {
-                console.log('bar');
                 this.currentPanel.webview.postMessage({
                     type: 'addSnippet',
                     snippet: snippet
@@ -75,10 +72,7 @@ export class WikiExplorer {
 
         if (firstRender) {
             const scriptSrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'webview.js')).with({ scheme: 'vscode-resource' });
-            const prettifySrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'prettify.js')).with({ scheme: 'vscode-resource' });
-            
             const cssSrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'webview.css')).with({ scheme: 'vscode-resource' });
-            const prettifyCssSrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'prettify.css')).with({ scheme: 'vscode-resource' });
             
             const workspacePaths: vscode.WorkspaceFolder[] | undefined = vscode.workspace.workspaceFolders;
 
@@ -87,8 +81,6 @@ export class WikiExplorer {
                     <head>
                         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                         <link rel="stylesheet" href={cssSrc.toString()} />
-                        {/* <link rel="stylesheet" href={prettifyCssSrc.toString()} /> */}
-                        {/* <script src={prettifySrc.toString()}></script> */}
                     </head>
                     <body>
                         <div id="root"></div>

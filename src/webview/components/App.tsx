@@ -139,8 +139,6 @@ export default class App extends React.Component<WebViewProps, WebViewState> {
             this.props.message.on('addSnippet', (message) => {
                 let snippet = new Snippet(message.snippet.start, message.snippet.end, message.snippet.text, message.snippet.file.path);
 
-                console.log(snippet.file.path);
-
                 // show modal
                 this.setState({
                     showModal: true,
