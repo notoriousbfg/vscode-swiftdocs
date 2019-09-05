@@ -45,6 +45,71 @@ export class WikiExplorer {
                     enableScripts: true
                 }
             );
+
+            // important to only register these events once, when webview created
+
+            // when we receive panel from webview
+            this.currentPanel.webview.onDidReceiveMessage(
+                message => {
+                    this.events.emit(message.type, message);
+
+                    switch (message.type) {
+                        case 'updateTitle':
+                            if (this.wiki !== undefined) {
+                                this.wiki.setTitle(message.title);
+                                this.wiki.save();
+                            }
+                            return;
+                        case 'addSnippet':
+                            if (this.wiki !== undefined) {
+                                this.wiki.addSnippet(message.snippet);
+                                this.wiki.save();
+                            }
+                            return;
+                        case 'goToFile':
+                            vscode.workspace.openTextDocument(vscode.Uri.file(message.snippet.file.path))
+                                .then((doc) => {
+                                    vscode.window.showTextDocument(doc, {
+                                        selection: new vscode.Range(
+                                            new vscode.Position(message.snippet.start.line, message.snippet.start.character),
+                                            new vscode.Position(message.snippet.end.line, message.snippet.end.character)
+                                        )
+                                    });
+                                });
+                            return;
+                    }
+                },
+                undefined,
+                context.subscriptions
+            );
+
+            // when panel state changes
+            this.currentPanel.onDidChangeViewState(
+                () => {
+                    if (this.currentPanel !== undefined) {
+                        // panel is visible but not focussed
+                        if (this.currentPanel.visible && !this.currentPanel.active) {
+                            this.webviewReady = true;
+                            // panel is not visible
+                        } else if (!this.currentPanel.visible) {
+                            this.webviewReady = false;
+                        }
+                    }
+                },
+                null,
+                context.subscriptions
+            );
+
+            // when panel is closed
+            this.currentPanel.onDidDispose(
+                () => {
+                    this.currentPanel = undefined;
+                    this.wiki = undefined;
+                    this.webviewReady = false;
+                },
+                null,
+                context.subscriptions
+            );
         }
 
         if (editor !== undefined) {
@@ -95,65 +160,5 @@ export class WikiExplorer {
 
             this.currentPanel.webview.html = renderToString(page);
         }
-
-        // when we receive panel from webview
-        this.currentPanel.webview.onDidReceiveMessage(
-            message => {
-                this.events.emit(message.type, message);
-
-                switch (message.type) {
-                    case 'updateTitle':
-                        if (this.wiki !== undefined) {
-                            this.wiki.setTitle(message.title);
-                        }
-                        break;
-                    case 'addSnippet':
-                        if (this.wiki !== undefined) {
-                            this.wiki.addSnippet(message.snippet);
-                        }
-                        break;
-                    case 'goToFile':
-                        vscode.workspace.openTextDocument(vscode.Uri.file(message.snippet.file.path))
-                            .then((doc) => {
-                                vscode.window.showTextDocument(doc, {
-                                    selection: new vscode.Range(
-                                        new vscode.Position(message.snippet.start.line, message.snippet.start.character),
-                                        new vscode.Position(message.snippet.end.line, message.snippet.end.character)
-                                    )
-                                });
-                            });
-                        break;
-                }
-            },
-            undefined,
-            context.subscriptions
-        );
-
-        // when panel state changes
-        this.currentPanel.onDidChangeViewState(
-            () => {
-                if(this.currentPanel !== undefined) {
-                    // panel is visible but not focussed
-                    if (this.currentPanel.visible && !this.currentPanel.active) {
-                        this.webviewReady = true;
-                    // panel is not visible
-                    } else if(!this.currentPanel.visible) {
-                        this.webviewReady = false;
-                    }
-                }
-            },
-            null,
-            context.subscriptions
-        );
-
-        // when panel is closed
-        this.currentPanel.onDidDispose(
-            () => {
-                this.currentPanel = undefined;
-                this.wiki = undefined;
-            },
-            null,
-            context.subscriptions
-        );
     }
 }

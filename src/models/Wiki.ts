@@ -42,4 +42,13 @@ export default class Wiki extends Model implements ModelInterface {
     public setSnippets(snippets: Snippet[]) {
         this.snippets = snippets;
     }
+
+    public toJson() : string {
+        return JSON.stringify(
+            {
+                title: this.title,
+                snippets: this.snippets
+            }
+        , null, 4);
+    }
 }

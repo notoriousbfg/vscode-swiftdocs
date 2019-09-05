@@ -38,7 +38,7 @@ const SortableList = SortableContainer(({
         <div className="snippet-list">
             {
                 items.map((value: Snippet, index: number) => (
-                    <SortableItem key={`item-${value.description}`} index={index} value={value} canSelect={canSelect} message={message} />
+                    <SortableItem key={`item-${value.description}-${index}`} index={index} value={value} canSelect={canSelect} message={message} />
                 ))
             }
         </div>

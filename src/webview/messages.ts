@@ -5,12 +5,12 @@ export default class MessageBus {
     public constructor(vscode: Object) {
         this.vscode = vscode;
         this.listeners = {};
-        window.addEventListener('message', (e) => {
-            this.handleMessage(e);
-        });
+
+        this.handleMessage = this.handleMessage.bind(this);
+        window.addEventListener('message', this.handleMessage);
     }
 
-    // what event type is this?
+    // fired when message is received
     private handleMessage(event: any) : void {
         let message = event.data;
 

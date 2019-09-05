@@ -32,7 +32,7 @@ export default class Modal extends React.Component<ModalProps, ModalState> {
         this.setState({ description: event.currentTarget.value });
     }
 
-    handleSubmit(event: React.MouseEvent) {
+    handleSubmitClick(event: React.MouseEvent) {
         let snippet = this.props.snippet;
 
         if(snippet !== undefined) {
@@ -54,7 +54,7 @@ export default class Modal extends React.Component<ModalProps, ModalState> {
                     <textarea className="textarea modal-snippet-description" name="snippet_descripion" onChange={(e) => { this.updateDescription(e); }} placeholder="Your explanation"></textarea>
                     <div className="modal-footer">
                         <span className="button cancel-button" onClick={(e) => { this.close(); }}>Cancel</span>
-                        <span className="button submit-button" onClick={(e) => { this.handleSubmit(e); }}>Submit</span>
+                        <span className="button submit-button" onClick={(e) => { this.handleSubmitClick(e); }}>Submit</span>
                     </div>
                 </div>
             </div>

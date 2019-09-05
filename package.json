@@ -23,7 +23,7 @@
 			},
 			{
 				"command": "extension.createSnippet",
-				"title": "Copy Snippet"
+				"title": "Assign to Wiki"
 			}
 		],
 		"menus": {
