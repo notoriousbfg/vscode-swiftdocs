@@ -28,8 +28,8 @@ export class WikiExplorer {
 
     initialise(context: vscode.ExtensionContext, event: Event) {
         const columnToShowIn = vscode.ViewColumn.Beside;
-        const editor = vscode.window.activeTextEditor;
         
+        let editor = vscode.window.activeTextEditor;
         let snippet: Snippet;
         let firstRender = true;
 
@@ -49,11 +49,13 @@ export class WikiExplorer {
 
         if (editor !== undefined) {
             // create snippet from current selection
-            snippet = new Snippet(editor.selection.start, editor.selection.end, editor.document.getText(editor.selection), editor.document.uri);
+            snippet = new Snippet(editor!.selection.start, editor!.selection.end, editor!.document.getText(editor!.selection), editor!.document.uri);
 
             // send snippet to webview so it can be rendered
             if (!this.webviewReady) {
+                console.log('foo');
                 this.events.once('ready', () => {
+                    console.log('cunts');
                     if (this.currentPanel !== undefined) {
                         this.currentPanel.webview.postMessage({
                             type: 'addSnippet',
@@ -63,6 +65,7 @@ export class WikiExplorer {
                     this.webviewReady = true;
                 });
             } else {
+                console.log('bar');
                 this.currentPanel.webview.postMessage({
                     type: 'addSnippet',
                     snippet: snippet
@@ -72,7 +75,11 @@ export class WikiExplorer {
 
         if (firstRender) {
             const scriptSrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'webview.js')).with({ scheme: 'vscode-resource' });
+            const prettifySrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'prettify.js')).with({ scheme: 'vscode-resource' });
+            
             const cssSrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'webview.css')).with({ scheme: 'vscode-resource' });
+            const prettifyCssSrc = vscode.Uri.file(path.join(context.extensionPath, 'dist', 'prettify.css')).with({ scheme: 'vscode-resource' });
+            
             const workspacePaths: vscode.WorkspaceFolder[] | undefined = vscode.workspace.workspaceFolders;
 
             const page = (
@@ -80,6 +87,8 @@ export class WikiExplorer {
                     <head>
                         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                         <link rel="stylesheet" href={cssSrc.toString()} />
+                        {/* <link rel="stylesheet" href={prettifyCssSrc.toString()} /> */}
+                        {/* <script src={prettifySrc.toString()}></script> */}
                     </head>
                     <body>
                         <div id="root"></div>
@@ -101,9 +110,6 @@ export class WikiExplorer {
                 this.events.emit(message.type, message);
 
                 switch (message.type) {
-                    case 'webviewReady':
-                        this.webviewReady = true;
-                        break;
                     case 'updateTitle':
                         if (this.wiki !== undefined) {
                             this.wiki.setTitle(message.title);
@@ -128,6 +134,23 @@ export class WikiExplorer {
                 }
             },
             undefined,
+            context.subscriptions
+        );
+
+        // when panel state changes
+        this.currentPanel.onDidChangeViewState(
+            () => {
+                if(this.currentPanel !== undefined) {
+                    // panel is visible but not focussed
+                    if (this.currentPanel.visible && !this.currentPanel.active) {
+                        this.webviewReady = true;
+                    // panel is not visible
+                    } else if(!this.currentPanel.visible) {
+                        this.webviewReady = false;
+                    }
+                }
+            },
+            null,
             context.subscriptions
         );
 
