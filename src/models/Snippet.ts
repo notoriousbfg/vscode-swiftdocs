@@ -1,10 +1,15 @@
 import * as vscode from 'vscode';
+import * as uuidv4 from 'uuid/v4';
 
 import Model from './Model';
+import Wiki from './Wiki';
 
-// import ModelInterface from '../interfaces/ModelInterface';
+import ModelInterface from '../interfaces/ModelInterface';
 
-export default class Snippet {
+export default class Snippet extends Model implements ModelInterface {
+    public uuid: string;
+    public wiki: Wiki;
+    public key: string;
     public start: vscode.Position;
     public end: vscode.Position;
     public text: string;
@@ -12,12 +17,14 @@ export default class Snippet {
         path: string;
         uri: vscode.Uri
     };
-    // public key: string;
     public description?: string;
 
-    public constructor(start: vscode.Position, end: vscode.Position, text: string, uri: vscode.Uri) {
-        // super();
+    public constructor(start: vscode.Position, end: vscode.Position, text: string, uri: vscode.Uri, wiki: Wiki) {
+        super();
 
+        this.uuid = uuidv4();
+        this.wiki = wiki;
+        this.key = `wikis.${this.wiki.uuid}.${this.uuid}`;
         this.start = start;
         this.end = end;
         this.text = text;
@@ -25,9 +32,6 @@ export default class Snippet {
             path: uri.path,
             uri: uri
         };
-
-        // a relatively safe attempt at a unique string
-        // this.key = `${new Date().getTime()}.${this.file.path}.${this.start.line}.${this.end.line}`;
     }
 
     public setDescription(description: string) {
