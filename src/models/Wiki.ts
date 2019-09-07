@@ -1,29 +1,28 @@
 import * as vscode from 'vscode';
+import * as uuidv4 from 'uuid/v4';
 
 import Model from './Model';
-import { ModelInterface } from '../interfaces/ModelInterface';
-
 import Snippet from './Snippet';
 
+import ModelInterface from '../interfaces/ModelInterface';
+
 export default class Wiki extends Model implements ModelInterface {
-    public id: string = '';
     public title: string;
     public snippets: Snippet[];
+    public uuid: string;
+    public key: string;
 
     public constructor(options?: {}) {
         super();
 
+        this.uuid = uuidv4();
         this.title = '';
         this.snippets = [];
 
+        this.key = `wikis.${this.uuid}`;
+
         if (options) {
-            // for(let [key, value] of Object.entries(options)) {
-            //     console.log([key, value]);
-
-            //     // if (typeof this[key] !== undefined) {
-
-            //     // }
-            // }
+            // TODO
         }
     }
 
@@ -43,12 +42,13 @@ export default class Wiki extends Model implements ModelInterface {
         this.snippets = snippets;
     }
 
-    public toJson() : string {
-        return JSON.stringify(
-            {
-                title: this.title,
-                snippets: this.snippets
-            }
-        , null, 4);
+    public toObject() : {} {
+        return {
+            uuid: this.uuid,
+            title: this.title,
+            snippets: this.snippets.map((snippet) => {
+                return snippet.toObject();
+            })
+        };
     }
 }

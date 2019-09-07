@@ -1,0 +1,25 @@
+{
+    "project": "my-first-project",
+    "wikis": {
+        "My First Wiki": {
+            "title": "My First Wiki",
+            "snippets": [
+                {
+                    "description": "Responsible for doing something client-side...",
+                    "text": "... the code ...",
+                    "start": {
+                        "line": 10,
+                        "character": 0
+                    },
+                    "end": {
+                        "line": 20,
+                        "character": 24
+                    },
+                    "file": {
+                        "path": "/Users/tim/projects/my-first-project/public/scripts.js"
+                    }
+                }
+            ]
+        }
+    }
+}

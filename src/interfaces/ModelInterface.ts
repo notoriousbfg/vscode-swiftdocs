@@ -1,7 +1,6 @@
-import * as vscode from 'vscode';
-
-export interface ModelInterface {
-    toJson: Function;
+export default interface ModelInterface {
     save: Function;
-    id: string;
+    toObject: Function;
+    uuid: string;
+    key: string;
 }
