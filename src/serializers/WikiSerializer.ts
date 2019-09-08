@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export class WikiSerializer implements vscode.WebviewPanelSerializer {
+export default class WikiSerializer implements vscode.WebviewPanelSerializer {
     async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: any) {
         // `state` is the state persisted using `setState` inside the webview
         console.log(`Got state: ${state}`);

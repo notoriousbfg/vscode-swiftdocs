@@ -1,7 +1,7 @@
 {
     "project": "my-first-project",
     "wikis": {
-        "My First Wiki": {
+        "uuid": {
             "title": "My First Wiki",
             "snippets": [
                 {

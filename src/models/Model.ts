@@ -1,3 +1,7 @@
+/**
+ * TODO: Replace logic in this class with Config class.
+ */
+
 import { stat, writeFile, readFile } from 'fs';
 
 import * as vscode from 'vscode';
@@ -20,8 +24,9 @@ export default class Model implements ModelInterface {
     private createFileIfNotExists() {
         stat(this.filePath, (err, stats) => {
             if (err) {
-                this.save();
-                vscode.window.showInformationMessage('File teams.json created.');
+                writeFile(this.filePath, JSON.stringify({}), () => {
+                    vscode.window.showInformationMessage('File teams.json created.');
+                });
             }
         });
     }

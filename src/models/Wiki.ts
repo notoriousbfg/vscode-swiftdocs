@@ -16,7 +16,7 @@ export default class Wiki extends Model implements ModelInterface {
         super();
 
         this.uuid = uuidv4();
-        this.title = '';
+        this.title = 'My First Wiki';
         this.snippets = [];
 
         this.key = `wikis.${this.uuid}`;
@@ -24,6 +24,10 @@ export default class Wiki extends Model implements ModelInterface {
         if (options) {
             // TODO
         }
+    }
+
+    public setUuid(uuid: string) {
+        this.uuid = uuid;
     }
 
     public setTitle(title: string) {
