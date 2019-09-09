@@ -11,11 +11,19 @@
 	],
 	"activationEvents": [
 		"onCommand:extension.createSnippet",
-		"onWebviewPanel:swiftDocs"
+		"onWebviewPanel:swiftDocs",
+		"onView:wikiExplorer"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
-		"views": {},
+		"views": {
+			"explorer": [
+				{
+					"id": "wikiExplorer",
+					"name": "SwiftDocs: Wikis"
+				}
+			]
+		},
 		"commands": [
 			{
 				"command": "extension.activate",

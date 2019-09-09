@@ -3,39 +3,16 @@ import { stat, writeFile, readFile } from 'fs';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-import TreeView from './TreeView';
+import { TreeView } from './TreeView';
 // import WebView from './WebView';
 
 import Wiki from './models/Wiki';
 import Snippet from './models/Snippet';
 
-export class SwiftDocs {
-    private treeView: TreeView;
-    // private webView: WebView;
-    
-    public config: Config;
-    public activeWiki?: Wiki;
-
-    constructor(context: vscode.ExtensionContext) {
-        this.config = new Config();
-
-        this.treeView = new TreeView(context);
-        // this.webView = new WebView(context);
-    }
-
-    public async initialise() {
-        console.log('start...');
-
-        await this.config.loadFromJson();
-        
-        this.treeView.initialise(this.config);
-        // this.webView.initialise(this.activeWiki);
-    }
-}
-
 export class Config {
     public project: string = '';
     public wikis: { [key: string]: Wiki } = {};
+    public activeWiki?: Wiki = undefined;
 
     private filePath: string = `${vscode.workspace.workspaceFolders![0].uri.path}/teams.json`;
 
@@ -89,5 +66,9 @@ export class Config {
 
     public save() {
         
+    }
+
+    public setActiveWiki(wiki: Wiki) {
+        this.activeWiki = wiki;
     }
 }

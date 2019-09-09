@@ -2,23 +2,31 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-import { SwiftDocs } from './SwiftDocs';
-// import WebView from './WebView';
+import { Config } from './SwiftDocs';
 
 import WikiSerializer from './serializers/WikiSerializer';
+import { TreeView } from './TreeView';
+import { WebView } from './WebView';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-    const main = new SwiftDocs(context);
+    const config = new Config();
+    const treeView = new TreeView(context);
+    const webView = new WebView(context);
 
-    const createSnippet = vscode.commands.registerCommand("extension.createSnippet", (e) => {
-        main.initialise();
-    });
+    config.loadFromJson()
+        .then(() => {
+            treeView.initialise(config);
 
-    context.subscriptions.push(createSnippet);
+            const createSnippet = vscode.commands.registerCommand("extension.createSnippet", (e) => {
+                webView.initialise();
+            });
 
-    vscode.window.registerWebviewPanelSerializer('swiftDocs', new WikiSerializer());
+            context.subscriptions.push(createSnippet);
+
+            vscode.window.registerWebviewPanelSerializer('swiftDocs', new WikiSerializer());
+        });
 }
 
 // this method is called when your extension is deactivated

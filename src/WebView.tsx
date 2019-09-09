@@ -10,7 +10,7 @@ import { Config } from './SwiftDocs';
 import Snippet from './models/Snippet';
 import Wiki from './models/Wiki';
 
-export default class WebView {
+export class WebView {
     private currentPanel: vscode.WebviewPanel | undefined = undefined;
     private wiki: Wiki | undefined = undefined;
     private events: EventEmitter = new EventEmitter();
