@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 
 import { SwiftDocs } from './SwiftDocs';
-import WebView from './WebView';
+// import WebView from './WebView';
 
 import WikiSerializer from './serializers/WikiSerializer';
 

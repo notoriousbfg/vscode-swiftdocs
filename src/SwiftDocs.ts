@@ -4,14 +4,14 @@ import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
 import TreeView from './TreeView';
-import WebView from './WebView';
+// import WebView from './WebView';
 
 import Wiki from './models/Wiki';
 import Snippet from './models/Snippet';
 
 export class SwiftDocs {
     private treeView: TreeView;
-    private webView: WebView;
+    // private webView: WebView;
     
     public config: Config;
     public activeWiki?: Wiki;
@@ -20,13 +20,15 @@ export class SwiftDocs {
         this.config = new Config();
 
         this.treeView = new TreeView(context);
-        this.webView = new WebView(context);
+        // this.webView = new WebView(context);
     }
 
     public async initialise() {
+        console.log('start...');
+
         await this.config.loadFromJson();
         
-        // this.treeView.initialise(this.config);
+        this.treeView.initialise(this.config);
         // this.webView.initialise(this.activeWiki);
     }
 }
@@ -35,11 +37,11 @@ export class Config {
     public project: string = '';
     public wikis: { [key: string]: Wiki } = {};
 
-    private filePath: string = `${vscode.workspace.rootPath}/teams.json`;
+    private filePath: string = `${vscode.workspace.workspaceFolders![0].uri.path}/teams.json`;
 
     // read from teams.json (if present) and load into config
     public loadFromJson() {
-        return new Promise((reject, resolve) => {
+        return new Promise((resolve, reject) => {
             // check for presence of json file
             stat(this.filePath, (err, stats) => {
                 // file does not exist
@@ -47,6 +49,7 @@ export class Config {
                     // create file & notify user of creation
                     writeFile(this.filePath, JSON.stringify({}), () => {
                         vscode.window.showInformationMessage('File teams.json created.');
+                        resolve();
                     });
                 } else {
                     readFile(this.filePath, 'utf8', (err, data) => {
