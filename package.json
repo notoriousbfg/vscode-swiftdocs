@@ -89,7 +89,7 @@
 		"@types/lodash": "^4.14.138",
 		"@types/uuid": "^3.4.5",
 		"array-move": "^2.1.0",
-		"lodash": "^4.17.15",
+		"lodash": "^4.17.21",
 		"prettier": "1.18.2",
 		"prop-types": "^15.7.2",
 		"react": "^16.9.0",
